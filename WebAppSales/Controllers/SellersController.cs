@@ -35,10 +35,10 @@ namespace WebAppSales.Controllers
             var viewModel = new SellerFormViewModel { Departments = departments };
             return View(viewModel);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async  Task<IActionResult> Create(Seller seller)
+        public async Task<IActionResult> Create(Seller seller)
         {
             if (!ModelState.IsValid)
             {
@@ -55,7 +55,7 @@ namespace WebAppSales.Controllers
         {
             if (id == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "ID not provided"});
+                return RedirectToAction(nameof(Error), new { message = "ID not provided" });
             }
 
             var obj = await _sellerService.FindByIdAsync(id.Value);
@@ -70,8 +70,15 @@ namespace WebAppSales.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _sellerService.RemoveAsync(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _sellerService.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -107,7 +114,7 @@ namespace WebAppSales.Controllers
 
             return View(viewModel);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Seller seller)
@@ -134,7 +141,7 @@ namespace WebAppSales.Controllers
             }
         }
 
-        public IActionResult Error (string message)
+        public IActionResult Error(string message)
         {
             var viewModel = new ErrorViewModel { Message = message, RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier };
             return View(viewModel);
